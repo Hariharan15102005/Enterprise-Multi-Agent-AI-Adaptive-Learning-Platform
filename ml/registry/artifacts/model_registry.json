@@ -1,0 +1,367 @@
+{
+  "models": {
+    "customer_segmentation": {
+      "v1.0": {
+        "model_name": "customer_segmentation",
+        "version": "v1.0",
+        "model_type": "KMeans_Clustering",
+        "artifact_file": "customer_segmentation_v1.0.joblib",
+        "artifact_path": "C:\\Users\\Hariharan K\\OneDrive\\Desktop\\IBM_INTERN_PROJECT\\ml\\registry\\artifacts\\customer_segmentation_v1.0.joblib",
+        "status": "active",
+        "features": [
+          "recency_days",
+          "frequency_orders",
+          "monetary_spend_brl",
+          "avg_order_value",
+          "avg_items_per_order",
+          "category_diversity"
+        ],
+        "evaluation_metrics": {
+          "silhouette_score": 0.5127,
+          "calinski_harabasz_score": 89804.37,
+          "n_clusters": 4,
+          "cluster_distribution": {
+            "Cluster_0": {
+              "count": 16870,
+              "percentage": 17.68
+            },
+            "Cluster_1": {
+              "count": 75224,
+              "percentage": 78.83
+            },
+            "Cluster_2": {
+              "count": 2924,
+              "percentage": 3.06
+            },
+            "Cluster_3": {
+              "count": 402,
+              "percentage": 0.42
+            }
+          },
+          "total_samples": 95420,
+          "cluster_profiles": {
+            "0": {
+              "segment_name": "High-Value At-Risk",
+              "description": "Historical big spenders who have not made a purchase recently.",
+              "customer_count": 16870,
+              "share_pct": 17.68,
+              "avg_recency_days": 287.6,
+              "avg_frequency": 1.07,
+              "avg_monetary_brl": 274.79,
+              "avg_order_value_brl": 262.79,
+              "avg_category_diversity": 1.06
+            },
+            "1": {
+              "segment_name": "Low-Engagement / Inactive",
+              "description": "One-time historical buyers with older purchase dates and modest spend.",
+              "customer_count": 75224,
+              "share_pct": 78.83,
+              "avg_recency_days": 286.7,
+              "avg_frequency": 1.03,
+              "avg_monetary_brl": 75.64,
+              "avg_order_value_brl": 74.07,
+              "avg_category_diversity": 1.02
+            },
+            "2": {
+              "segment_name": "High-Value At-Risk",
+              "description": "Historical big spenders who have not made a purchase recently.",
+              "customer_count": 2924,
+              "share_pct": 3.06,
+              "avg_recency_days": 293.7,
+              "avg_frequency": 1.05,
+              "avg_monetary_brl": 815.32,
+              "avg_order_value_brl": 790.91,
+              "avg_category_diversity": 1.04
+            },
+            "3": {
+              "segment_name": "High-Value At-Risk",
+              "description": "Historical big spenders who have not made a purchase recently.",
+              "customer_count": 402,
+              "share_pct": 0.42,
+              "avg_recency_days": 286.7,
+              "avg_frequency": 1.03,
+              "avg_monetary_brl": 2193.32,
+              "avg_order_value_brl": 2147.46,
+              "avg_category_diversity": 1.01
+            }
+          }
+        },
+        "hyperparameters": {
+          "n_clusters": 4,
+          "random_seed": 42,
+          "init": "k-means++",
+          "n_init": 10
+        },
+        "description": "RFM Customer Segmentation clustering engine on unique consumers.",
+        "created_at": "2026-09-24T10:25:07.728702",
+        "extra_metadata": {
+          "cluster_profiles": {
+            "0": {
+              "segment_name": "High-Value At-Risk",
+              "description": "Historical big spenders who have not made a purchase recently.",
+              "customer_count": 16870,
+              "share_pct": 17.68,
+              "avg_recency_days": 287.6,
+              "avg_frequency": 1.07,
+              "avg_monetary_brl": 274.79,
+              "avg_order_value_brl": 262.79,
+              "avg_category_diversity": 1.06
+            },
+            "1": {
+              "segment_name": "Low-Engagement / Inactive",
+              "description": "One-time historical buyers with older purchase dates and modest spend.",
+              "customer_count": 75224,
+              "share_pct": 78.83,
+              "avg_recency_days": 286.7,
+              "avg_frequency": 1.03,
+              "avg_monetary_brl": 75.64,
+              "avg_order_value_brl": 74.07,
+              "avg_category_diversity": 1.02
+            },
+            "2": {
+              "segment_name": "High-Value At-Risk",
+              "description": "Historical big spenders who have not made a purchase recently.",
+              "customer_count": 2924,
+              "share_pct": 3.06,
+              "avg_recency_days": 293.7,
+              "avg_frequency": 1.05,
+              "avg_monetary_brl": 815.32,
+              "avg_order_value_brl": 790.91,
+              "avg_category_diversity": 1.04
+            },
+            "3": {
+              "segment_name": "High-Value At-Risk",
+              "description": "Historical big spenders who have not made a purchase recently.",
+              "customer_count": 402,
+              "share_pct": 0.42,
+              "avg_recency_days": 286.7,
+              "avg_frequency": 1.03,
+              "avg_monetary_brl": 2193.32,
+              "avg_order_value_brl": 2147.46,
+              "avg_category_diversity": 1.01
+            }
+          }
+        }
+      }
+    },
+    "delivery_risk": {
+      "v1.0": {
+        "model_name": "delivery_risk",
+        "version": "v1.0",
+        "model_type": "HistGradientBoosting",
+        "artifact_file": "delivery_risk_v1.0.joblib",
+        "artifact_path": "C:\\Users\\Hariharan K\\OneDrive\\Desktop\\IBM_INTERN_PROJECT\\ml\\registry\\artifacts\\delivery_risk_v1.0.joblib",
+        "status": "active",
+        "features": [
+          "total_items_price_brl",
+          "total_freight_value_brl",
+          "freight_ratio_pct",
+          "total_item_count",
+          "unique_product_count",
+          "haversine_distance_km",
+          "estimated_delivery_duration_days",
+          "max_product_weight_g",
+          "total_product_volume_cm3",
+          "seller_historical_delay_rate",
+          "purchase_month",
+          "purchase_dayofweek",
+          "purchase_hour",
+          "customer_state",
+          "seller_state",
+          "is_interstate_shipment",
+          "top_category_name",
+          "primary_payment_type"
+        ],
+        "evaluation_metrics": {
+          "accuracy": 0.8426,
+          "precision": 0.1554,
+          "recall": 0.346,
+          "f1": 0.2145,
+          "roc_auc": 0.7287,
+          "pr_auc": 0.1295,
+          "confusion_matrix": {
+            "true_negative": 20816,
+            "false_positive": 2961,
+            "false_negative": 1030,
+            "true_positive": 545
+          },
+          "sample_size": 25352,
+          "positive_class_ratio": 0.0621
+        },
+        "hyperparameters": {
+          "max_iter": 150,
+          "learning_rate": 0.08,
+          "min_samples_leaf": 20,
+          "class_weight": "balanced",
+          "random_seed": 42,
+          "split_type": "chronological_out_of_time",
+          "split_date": "2018-05-01"
+        },
+        "description": "Fulfillment delay risk classifier using pre-dispatch features and seller history.",
+        "created_at": "2026-09-24T10:25:14.569467",
+        "extra_metadata": {}
+      }
+    },
+    "satisfaction_risk": {
+      "v1.0": {
+        "model_name": "satisfaction_risk",
+        "version": "v1.0",
+        "model_type": "RandomForestClassifier",
+        "artifact_file": "satisfaction_risk_v1.0.joblib",
+        "artifact_path": "C:\\Users\\Hariharan K\\OneDrive\\Desktop\\IBM_INTERN_PROJECT\\ml\\registry\\artifacts\\satisfaction_risk_v1.0.joblib",
+        "status": "active",
+        "features": [
+          "total_delivery_duration_days",
+          "delivery_delay_vs_estimated_days",
+          "freight_ratio_pct",
+          "total_items_price_brl",
+          "total_freight_value_brl",
+          "total_item_count",
+          "haversine_distance_km",
+          "seller_historical_review_score",
+          "is_delivered_late",
+          "is_interstate_shipment",
+          "primary_payment_type",
+          "top_category_name",
+          "customer_state"
+        ],
+        "evaluation_metrics": {
+          "accuracy": 0.8407,
+          "precision": 0.2894,
+          "recall": 0.4067,
+          "f1": 0.3382,
+          "roc_auc": 0.6862,
+          "pr_auc": 0.3003,
+          "confusion_matrix": {
+            "true_negative": 20195,
+            "false_positive": 2522,
+            "false_negative": 1498,
+            "true_positive": 1027
+          },
+          "sample_size": 25242,
+          "positive_class_ratio": 0.1
+        },
+        "hyperparameters": {
+          "n_estimators": 100,
+          "max_depth": 10,
+          "class_weight": "balanced",
+          "random_seed": 42,
+          "split_type": "chronological_out_of_time",
+          "split_date": "2018-05-01"
+        },
+        "description": "Predicts risk of low review scores (1-2 stars) from operational fulfillment variables.",
+        "created_at": "2026-09-24T10:25:18.842246",
+        "extra_metadata": {}
+      }
+    },
+    "gmv_forecaster": {
+      "v1.0": {
+        "model_name": "gmv_forecaster",
+        "version": "v1.0",
+        "model_type": "GradientBoostingRegressor_LagAutoregressive",
+        "artifact_file": "gmv_forecaster_v1.0.joblib",
+        "artifact_path": "C:\\Users\\Hariharan K\\OneDrive\\Desktop\\IBM_INTERN_PROJECT\\ml\\registry\\artifacts\\gmv_forecaster_v1.0.joblib",
+        "status": "active",
+        "features": [
+          "dayofweek",
+          "month",
+          "day",
+          "is_weekend",
+          "lag_1",
+          "lag_7",
+          "lag_14",
+          "lag_28",
+          "rolling_mean_7",
+          "rolling_std_7",
+          "rolling_mean_30"
+        ],
+        "evaluation_metrics": {
+          "target": "daily_gmv",
+          "train_samples": 482,
+          "test_samples": 91,
+          "test_period": {
+            "start": "2018-06-01",
+            "end": "2018-08-30"
+          },
+          "baseline_metrics": {
+            "mae": 7812.039,
+            "rmse": 9391.1865,
+            "r2_score": 0.4474,
+            "mape_pct": 39.31,
+            "sample_size": 91
+          },
+          "ml_metrics": {
+            "mae": 5998.7189,
+            "rmse": 7669.544,
+            "r2_score": 0.6314,
+            "mape_pct": 38.08,
+            "sample_size": 91
+          },
+          "mae_improvement_pct": 23.21
+        },
+        "hyperparameters": {
+          "horizon_days": 30,
+          "random_seed": 42
+        },
+        "description": "Daily Gross Merchandise Value (GMV) 30-day forecast engine with confidence bands.",
+        "created_at": "2026-09-24T10:25:19.257835",
+        "extra_metadata": {}
+      }
+    },
+    "orders_forecaster": {
+      "v1.0": {
+        "model_name": "orders_forecaster",
+        "version": "v1.0",
+        "model_type": "GradientBoostingRegressor_LagAutoregressive",
+        "artifact_file": "orders_forecaster_v1.0.joblib",
+        "artifact_path": "C:\\Users\\Hariharan K\\OneDrive\\Desktop\\IBM_INTERN_PROJECT\\ml\\registry\\artifacts\\orders_forecaster_v1.0.joblib",
+        "status": "active",
+        "features": [
+          "dayofweek",
+          "month",
+          "day",
+          "is_weekend",
+          "lag_1",
+          "lag_7",
+          "lag_14",
+          "lag_28",
+          "rolling_mean_7",
+          "rolling_std_7",
+          "rolling_mean_30"
+        ],
+        "evaluation_metrics": {
+          "target": "daily_orders",
+          "train_samples": 482,
+          "test_samples": 91,
+          "test_period": {
+            "start": "2018-06-01",
+            "end": "2018-08-30"
+          },
+          "baseline_metrics": {
+            "mae": 46.8289,
+            "rmse": 56.4534,
+            "r2_score": 0.4179,
+            "mape_pct": 53.2,
+            "sample_size": 91
+          },
+          "ml_metrics": {
+            "mae": 37.0348,
+            "rmse": 58.8124,
+            "r2_score": 0.3682,
+            "mape_pct": 48.8,
+            "sample_size": 91
+          },
+          "mae_improvement_pct": 20.91
+        },
+        "hyperparameters": {
+          "horizon_days": 30,
+          "random_seed": 42
+        },
+        "description": "Daily Order Volume 30-day forecast engine with confidence intervals.",
+        "created_at": "2026-09-24T10:25:19.280210",
+        "extra_metadata": {}
+      }
+    }
+  },
+  "last_updated": "2026-09-24T10:25:19.297580"
+}

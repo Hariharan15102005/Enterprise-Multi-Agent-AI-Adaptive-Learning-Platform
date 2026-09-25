@@ -24,9 +24,15 @@ class CustomerSummaryItem(BaseModel):
 
 class CustomerGeoItem(BaseModel):
     state_code: str
+    state_name: Optional[str] = None
+    region: Optional[str] = None
     customer_count: int
+    percentage_of_total: Optional[float] = None
+    rank: Optional[int] = None
     total_spend_brl: float
     avg_spend_per_customer: float
+    total_orders: Optional[int] = None
+    avg_review_score: Optional[float] = None
     repeat_customer_rate: float
     latitude: Optional[float] = None
     longitude: Optional[float] = None

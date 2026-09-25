@@ -31,26 +31,88 @@ class CustomerRepository(BaseRepository):
         ]
 
     def get_geo_distribution(self) -> List[Dict[str, Any]]:
+        total_customers = self.execute_scalar("SELECT COUNT(DISTINCT customer_unique_id) FROM dim_customer") or 1
         query = """
+        WITH state_orders AS (
+            SELECT 
+                dc.current_state AS state_code,
+                COUNT(DISTINCT dc.customer_unique_id) AS customer_count,
+                COALESCE(SUM(dc.lifetime_spend_brl), 0.0) AS total_spend_brl,
+                COALESCE(AVG(dc.lifetime_spend_brl), 0.0) AS avg_spend_per_customer,
+                COALESCE(AVG(CASE WHEN dc.is_repeat_customer THEN 1.0 ELSE 0.0 END) * 100.0, 0.0) AS repeat_customer_rate,
+                COALESCE(SUM(dc.lifetime_order_count), 0) AS total_orders,
+                AVG(dc.latitude) AS latitude,
+                AVG(dc.longitude) AS longitude
+            FROM dim_customer dc
+            GROUP BY dc.current_state
+        ),
+        state_reviews AS (
+            SELECT 
+                dc.current_state AS state_code,
+                AVG(fo.review_score) AS avg_review_score
+            FROM dim_customer dc
+            JOIN fact_orders fo ON dc.customer_unique_id = fo.customer_unique_id
+            WHERE fo.has_review = 1
+            GROUP BY dc.current_state
+        )
         SELECT 
-            dc.current_state AS state_code,
-            COUNT(*) AS customer_count,
-            COALESCE(SUM(dc.lifetime_spend_brl), 0.0) AS total_spend_brl,
-            COALESCE(AVG(dc.lifetime_spend_brl), 0.0) AS avg_spend_per_customer,
-            COALESCE(AVG(CASE WHEN dc.is_repeat_customer THEN 1.0 ELSE 0.0 END) * 100.0, 0.0) AS repeat_customer_rate,
-            AVG(dc.latitude) AS latitude,
-            AVG(dc.longitude) AS longitude
-        FROM dim_customer dc
-        GROUP BY dc.current_state
-        ORDER BY customer_count DESC
+            so.state_code,
+            so.customer_count,
+            so.total_spend_brl,
+            so.avg_spend_per_customer,
+            so.repeat_customer_rate,
+            so.total_orders,
+            sr.avg_review_score,
+            so.latitude,
+            so.longitude,
+            RANK() OVER (ORDER BY so.customer_count DESC) as rank
+        FROM state_orders so
+        LEFT JOIN state_reviews sr ON so.state_code = sr.state_code
+        ORDER BY so.customer_count DESC
         """
         rows = self.execute_query(query)
+        state_meta = {
+            "AC": {"name": "Acre", "region": "North"},
+            "AL": {"name": "Alagoas", "region": "Northeast"},
+            "AM": {"name": "Amazonas", "region": "North"},
+            "AP": {"name": "Amapá", "region": "North"},
+            "BA": {"name": "Bahia", "region": "Northeast"},
+            "CE": {"name": "Ceará", "region": "Northeast"},
+            "DF": {"name": "Distrito Federal", "region": "Central-West"},
+            "ES": {"name": "Espírito Santo", "region": "Southeast"},
+            "GO": {"name": "Goiás", "region": "Central-West"},
+            "MA": {"name": "Maranhão", "region": "Northeast"},
+            "MG": {"name": "Minas Gerais", "region": "Southeast"},
+            "MS": {"name": "Mato Grosso do Sul", "region": "Central-West"},
+            "MT": {"name": "Mato Grosso", "region": "Central-West"},
+            "PA": {"name": "Pará", "region": "North"},
+            "PB": {"name": "Paraíba", "region": "Northeast"},
+            "PE": {"name": "Pernambuco", "region": "Northeast"},
+            "PI": {"name": "Piauí", "region": "Northeast"},
+            "PR": {"name": "Paraná", "region": "South"},
+            "RJ": {"name": "Rio de Janeiro", "region": "Southeast"},
+            "RN": {"name": "Rio Grande do Norte", "region": "Northeast"},
+            "RO": {"name": "Rondônia", "region": "North"},
+            "RR": {"name": "Roraima", "region": "North"},
+            "RS": {"name": "Rio Grande do Sul", "region": "South"},
+            "SC": {"name": "Santa Catarina", "region": "South"},
+            "SE": {"name": "Sergipe", "region": "Northeast"},
+            "SP": {"name": "São Paulo", "region": "Southeast"},
+            "TO": {"name": "Tocantins", "region": "North"}
+        }
+
         return [
             {
                 "state_code": str(r["state_code"]),
+                "state_name": state_meta.get(str(r["state_code"]), {}).get("name", str(r["state_code"])),
+                "region": state_meta.get(str(r["state_code"]), {}).get("region", "Other"),
                 "customer_count": int(r["customer_count"]),
+                "percentage_of_total": round(float(r["customer_count"]) / float(total_customers) * 100.0, 2),
+                "rank": int(r["rank"]) if r["rank"] is not None else 0,
                 "total_spend_brl": round(float(r["total_spend_brl"]), 2),
                 "avg_spend_per_customer": round(float(r["avg_spend_per_customer"]), 2),
+                "total_orders": int(r["total_orders"]) if r["total_orders"] is not None else int(r["customer_count"]),
+                "avg_review_score": round(float(r["avg_review_score"]), 2) if r["avg_review_score"] is not None else 4.0,
                 "repeat_customer_rate": round(float(r["repeat_customer_rate"]), 2),
                 "latitude": round(float(r["latitude"]), 4) if r["latitude"] is not None else None,
                 "longitude": round(float(r["longitude"]), 4) if r["longitude"] is not None else None

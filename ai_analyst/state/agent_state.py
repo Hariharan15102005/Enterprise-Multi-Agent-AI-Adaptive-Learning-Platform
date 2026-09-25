@@ -10,6 +10,9 @@ class AgentIntent(str, Enum):
     TIME_SERIES = "TIME_SERIES"
     RANKING = "RANKING"
     COMPARISON = "COMPARISON"
+    PROPORTION_SHARE = "PROPORTION_SHARE"
+    CORRELATION = "CORRELATION"
+    DISTRIBUTION = "DISTRIBUTION"
     CUSTOMER_ANALYTICS = "CUSTOMER_ANALYTICS"
     CUSTOMER_SEGMENTATION = "CUSTOMER_SEGMENTATION"
     PRODUCT_ANALYTICS = "PRODUCT_ANALYTICS"
@@ -26,12 +29,27 @@ class AgentIntent(str, Enum):
     UNSUPPORTED = "UNSUPPORTED"
 
 
+class ChartType(str, Enum):
+    KPI = "kpi"
+    BAR = "bar"
+    HORIZONTAL_BAR = "horizontal_bar"
+    LINE = "line"
+    AREA = "area"
+    DONUT = "donut"
+    PIE = "pie"
+    SCATTER = "scatter"
+    HISTOGRAM = "histogram"
+    TABLE = "table"
+
+
 class ResponseType(str, Enum):
     KPI = "KPI"
     TABLE = "TABLE"
     TIME_SERIES = "TIME_SERIES"
     RANKING = "RANKING"
     COMPARISON = "COMPARISON"
+    CORRELATION = "CORRELATION"
+    DISTRIBUTION = "DISTRIBUTION"
     PREDICTION = "PREDICTION"
     FORECAST = "FORECAST"
     ANOMALY = "ANOMALY"
@@ -41,16 +59,27 @@ class ResponseType(str, Enum):
 
 
 class VisualizationMeta(BaseModel):
-    recommended_chart: str = "table" # line, bar, horizontal_bar, pie, table, KPI
-    x_field: Optional[str] = None
-    y_field: Optional[str] = None
+    recommended_chart: str = "table"  # kpi, bar, horizontal_bar, line, area, donut, pie, scatter, histogram, table
+    chart_type: str = "table"
     title: Optional[str] = None
+    description: Optional[str] = None
+    x_key: Optional[str] = None
+    y_key: Optional[str] = None
+    z_key: Optional[str] = None
+    x_axis_label: Optional[str] = None
+    y_axis_label: Optional[str] = None
+    value_format: str = "number"  # currency, percentage, number, duration
+    kpi_value: Optional[str] = None
+    kpi_unit: Optional[str] = None
+    kpi_subtitle: Optional[str] = None
     chart_config: Dict[str, Any] = Field(default_factory=dict)
+    data: Optional[List[Dict[str, Any]]] = None
 
 
 class QueryPlan(BaseModel):
     metric: str
     dimension: Optional[str] = None
+    secondary_dimension: Optional[str] = None
     filters: Dict[str, Any] = Field(default_factory=dict)
     aggregation: str = "SUM"
     group_by: Optional[List[str]] = None
@@ -58,6 +87,8 @@ class QueryPlan(BaseModel):
     order_direction: str = "DESC"
     limit: int = 20
     target_table_or_view: str = "analytics_obt_orders"
+    intent: str = "KPI_LOOKUP"
+    chart_hint: Optional[str] = None
 
 
 class AgentState(TypedDict, total=False):
@@ -77,6 +108,8 @@ class AgentState(TypedDict, total=False):
     result_metadata: Dict[str, Any]
     insights: List[str]
     warnings: List[str]
+    caveats: Optional[str]
+    suggested_followups: List[str]
     error: Optional[str]
     retry_count: int
     response_type: str

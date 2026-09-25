@@ -258,7 +258,7 @@
       "v1.0": {
         "model_name": "gmv_forecaster",
         "version": "v1.0",
-        "model_type": "GradientBoostingRegressor_LagAutoregressive",
+        "model_type": "Ridge_Autoregressive_TimeSeries",
         "artifact_file": "gmv_forecaster_v1.0.joblib",
         "artifact_path": "C:\\Users\\Hariharan K\\OneDrive\\Desktop\\IBM_INTERN_PROJECT\\ml\\registry\\artifacts\\gmv_forecaster_v1.0.joblib",
         "status": "active",
@@ -277,6 +277,7 @@
         ],
         "evaluation_metrics": {
           "target": "daily_gmv",
+          "model_type": "Ridge_Autoregressive_TimeSeries",
           "train_samples": 482,
           "test_samples": 91,
           "test_period": {
@@ -291,20 +292,23 @@
             "sample_size": 91
           },
           "ml_metrics": {
-            "mae": 5998.7189,
-            "rmse": 7669.544,
-            "r2_score": 0.6314,
-            "mape_pct": 38.08,
+            "mae": 5665.0794,
+            "rmse": 7072.5135,
+            "r2_score": 0.6866,
+            "mape_pct": 30.46,
             "sample_size": 91
           },
-          "mae_improvement_pct": 23.21
+          "mae_improvement_pct": 27.48
         },
         "hyperparameters": {
+          "model": "Ridge",
+          "alpha": 10.0,
+          "scaler": "StandardScaler",
           "horizon_days": 30,
           "random_seed": 42
         },
-        "description": "Daily Gross Merchandise Value (GMV) 30-day forecast engine with confidence bands.",
-        "created_at": "2026-09-24T10:25:19.257835",
+        "description": "Daily Gross Merchandise Value (GMV) 30-day forecast engine using Ridge regression with 95% prediction intervals.",
+        "created_at": "2026-09-25T09:24:48.077110",
         "extra_metadata": {}
       }
     },
@@ -312,7 +316,7 @@
       "v1.0": {
         "model_name": "orders_forecaster",
         "version": "v1.0",
-        "model_type": "GradientBoostingRegressor_LagAutoregressive",
+        "model_type": "Ridge_Autoregressive_TimeSeries",
         "artifact_file": "orders_forecaster_v1.0.joblib",
         "artifact_path": "C:\\Users\\Hariharan K\\OneDrive\\Desktop\\IBM_INTERN_PROJECT\\ml\\registry\\artifacts\\orders_forecaster_v1.0.joblib",
         "status": "active",
@@ -331,6 +335,7 @@
         ],
         "evaluation_metrics": {
           "target": "daily_orders",
+          "model_type": "Ridge_Autoregressive_TimeSeries",
           "train_samples": 482,
           "test_samples": 91,
           "test_period": {
@@ -345,23 +350,26 @@
             "sample_size": 91
           },
           "ml_metrics": {
-            "mae": 37.0348,
-            "rmse": 58.8124,
-            "r2_score": 0.3682,
-            "mape_pct": 48.8,
+            "mae": 32.0733,
+            "rmse": 38.7789,
+            "r2_score": 0.7253,
+            "mape_pct": 37.67,
             "sample_size": 91
           },
-          "mae_improvement_pct": 20.91
+          "mae_improvement_pct": 31.51
         },
         "hyperparameters": {
+          "model": "Ridge",
+          "alpha": 10.0,
+          "scaler": "StandardScaler",
           "horizon_days": 30,
           "random_seed": 42
         },
-        "description": "Daily Order Volume 30-day forecast engine with confidence intervals.",
-        "created_at": "2026-09-24T10:25:19.280210",
+        "description": "Daily Order Volume 30-day forecast engine using Ridge regression with 95% prediction intervals.",
+        "created_at": "2026-09-25T09:24:48.079731",
         "extra_metadata": {}
       }
     }
   },
-  "last_updated": "2026-09-24T10:25:19.297580"
+  "last_updated": "2026-09-25T09:24:48.099335"
 }

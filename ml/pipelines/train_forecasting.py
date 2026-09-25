@@ -45,11 +45,11 @@ def run_pipeline() -> None:
         model_name="gmv_forecaster",
         version="v1.0",
         model_object=fitted_gmv,
-        model_type="GradientBoostingRegressor_LagAutoregressive",
+        model_type="Ridge_Autoregressive_TimeSeries",
         features=fitted_gmv.feature_cols,
         evaluation_metrics=gmv_metrics,
-        hyperparameters={"horizon_days": 30, "random_seed": ml_config.RANDOM_SEED},
-        description="Daily Gross Merchandise Value (GMV) 30-day forecast engine with confidence bands.",
+        hyperparameters={"model": "Ridge", "alpha": 10.0, "scaler": "StandardScaler", "horizon_days": 30, "random_seed": ml_config.RANDOM_SEED},
+        description="Daily Gross Merchandise Value (GMV) 30-day forecast engine using Ridge regression with 95% prediction intervals.",
         status="active"
     )
     
@@ -58,11 +58,11 @@ def run_pipeline() -> None:
         model_name="orders_forecaster",
         version="v1.0",
         model_object=fitted_orders,
-        model_type="GradientBoostingRegressor_LagAutoregressive",
+        model_type="Ridge_Autoregressive_TimeSeries",
         features=fitted_orders.feature_cols,
         evaluation_metrics=orders_metrics,
-        hyperparameters={"horizon_days": 30, "random_seed": ml_config.RANDOM_SEED},
-        description="Daily Order Volume 30-day forecast engine with confidence intervals.",
+        hyperparameters={"model": "Ridge", "alpha": 10.0, "scaler": "StandardScaler", "horizon_days": 30, "random_seed": ml_config.RANDOM_SEED},
+        description="Daily Order Volume 30-day forecast engine using Ridge regression with 95% prediction intervals.",
         status="active"
     )
     

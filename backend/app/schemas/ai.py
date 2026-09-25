@@ -28,6 +28,8 @@ class AIQueryResponse(BaseModel):
     sql: Optional[str] = None
     visualization: Dict[str, Any] = Field(default_factory=dict)
     insights: List[str] = Field(default_factory=list)
+    suggested_followups: List[str] = Field(default_factory=list)
+    caveats: Optional[str] = None
     warnings: List[str] = Field(default_factory=list)
     error: Optional[str] = None
     execution_time_ms: float

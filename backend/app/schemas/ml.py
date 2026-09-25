@@ -122,9 +122,13 @@ class SatisfactionRiskResponse(BaseModel):
 # ==========================================
 class ForecastPointSchema(BaseModel):
     date: str
+    forecast_date: Optional[str] = None
     forecast_value: float
+    predicted_value: Optional[float] = None
     lower_bound: float
+    predicted_lower: Optional[float] = None
     upper_bound: float
+    predicted_upper: Optional[float] = None
     day_name: str
     is_weekend: bool
 
@@ -136,6 +140,8 @@ class ForecastResponse(BaseModel):
     model_version: str
     model_type: str
     evaluation_metrics: Dict[str, Any]
+    total_forecast: Optional[float] = None
+    avg_daily_forecast: Optional[float] = None
     forecast: List[ForecastPointSchema]
 
 

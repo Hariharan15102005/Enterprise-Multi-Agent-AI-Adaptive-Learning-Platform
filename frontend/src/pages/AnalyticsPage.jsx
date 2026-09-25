@@ -7,6 +7,7 @@ import { TrendAreaChart, CategoryBarChart, PaymentDonutChart } from '../componen
 export function AnalyticsPage() {
   const [interval, setInterval] = useState('month');
   const [categorySort, setCategorySort] = useState('gmv');
+  const [paymentMetric, setPaymentMetric] = useState('value');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -179,13 +180,42 @@ export function AnalyticsPage() {
 
         {/* Payment Methods */}
         <div className="glass-card" style={{ padding: '1.5rem' }}>
-          <div style={{ marginBottom: '1rem' }}>
-            <h4 style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--text-primary)' }}>
-              Payment Channel Share
-            </h4>
-            <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-              Installment & channel volume distribution
-            </p>
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '1rem' }}>
+            <div>
+              <h4 style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--text-primary)' }}>
+                Payment Channel Share
+              </h4>
+              <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                {paymentMetric === 'value' ? 'Split by total payment value (R$)' : 'Split by transaction volume (count)'}
+              </p>
+            </div>
+            {/* Metric Selector Toggle */}
+            <div style={{ display: 'flex', alignItems: 'center', background: 'var(--bg-glass)', padding: '0.2rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-subtle)' }}>
+              <button
+                className="btn"
+                style={{
+                  padding: '0.25rem 0.5rem',
+                  fontSize: '0.7rem',
+                  background: paymentMetric === 'value' ? 'var(--primary)' : 'transparent',
+                  color: paymentMetric === 'value' ? '#fff' : 'var(--text-secondary)'
+                }}
+                onClick={() => setPaymentMetric('value')}
+              >
+                Value (R$)
+              </button>
+              <button
+                className="btn"
+                style={{
+                  padding: '0.25rem 0.5rem',
+                  fontSize: '0.7rem',
+                  background: paymentMetric === 'tx' ? 'var(--primary)' : 'transparent',
+                  color: paymentMetric === 'tx' ? '#fff' : 'var(--text-secondary)'
+                }}
+                onClick={() => setPaymentMetric('tx')}
+              >
+                Volume
+              </button>
+            </div>
           </div>
 
           {loading ? (
@@ -194,8 +224,8 @@ export function AnalyticsPage() {
             <PaymentDonutChart
               data={payments}
               height={300}
-              nameKey="payment_type"
-              valueKey="total_value"
+              nameKey="payment_channel"
+              valueKey={paymentMetric === 'value' ? 'total_payment_value' : 'total_transactions'}
             />
           )}
         </div>

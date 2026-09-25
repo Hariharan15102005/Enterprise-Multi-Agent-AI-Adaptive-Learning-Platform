@@ -111,11 +111,12 @@ def retrieve_schema_and_metrics_node(state: AgentState) -> Dict[str, Any]:
 
 
 def create_query_plan_node(state: AgentState) -> Dict[str, Any]:
-    """Generates structured query plan."""
+    """Generates structured query plan with conversation context."""
     question = state.get("question", "")
     intent = state.get("intent", AgentIntent.KPI_LOOKUP.value)
+    context = state.get("conversation_context") or []
     
-    plan = query_planner.plan(question, intent)
+    plan = query_planner.plan(question, intent, conversation_context=context)
     return {"query_plan": plan}
 
 
@@ -197,13 +198,15 @@ def generate_insights_node(state: AgentState) -> Dict[str, Any]:
     columns = state.get("columns") or []
     plan = state.get("query_plan")
     
-    answer, insights, viz, resp_type = insight_synthesizer.synthesize(question, rows, columns, plan)
+    answer, insights, viz, resp_type, followups, caveats = insight_synthesizer.synthesize(question, rows, columns, plan)
     
     return {
         "final_answer": answer,
         "insights": insights,
         "visualization": viz,
-        "response_type": resp_type
+        "response_type": resp_type,
+        "suggested_followups": followups,
+        "caveats": caveats
     }
 
 
@@ -212,6 +215,7 @@ def format_response_node(state: AgentState) -> Dict[str, Any]:
     if state.get("error") and not state.get("final_answer"):
         return {
             "final_answer": f"Unable to complete analytical query: {state.get('error')}",
-            "response_type": ResponseType.ERROR.value
+            "response_type": ResponseType.ERROR.value,
+            "suggested_followups": ["What is our total revenue?", "Show monthly sales trends.", "What are the top 5 product categories?"]
         }
     return {}

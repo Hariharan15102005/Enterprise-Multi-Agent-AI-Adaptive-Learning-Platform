@@ -218,20 +218,24 @@ class MLInferenceService:
         return prediction
 
     def get_forecast(self, target: str = "daily_gmv", horizon_days: int = 30) -> Dict[str, Any]:
-        """Returns multi-step forecast along with model evaluation performance."""
+        """Returns multi-step forecast along with model evaluation performance and summary statistics."""
         model_name = "gmv_forecaster" if target == "daily_gmv" else "orders_forecaster"
         forecaster = self.registry.load_model(model_name)
         meta = self.registry.get_model_metadata(model_name)
         
         horizon = forecaster.forecast_horizon(steps=horizon_days)
+        total_val = sum(pt.get("forecast_value", 0.0) for pt in horizon)
+        avg_val = total_val / len(horizon) if horizon else 0.0
         
         return {
             "target_metric": target,
             "horizon_days": horizon_days,
             "unit": "BRL" if target == "daily_gmv" else "orders",
             "model_version": meta.get("version", "v1.0") if meta else "v1.0",
-            "model_type": meta.get("model_type", "GradientBoostingRegressor") if meta else "GradientBoostingRegressor",
+            "model_type": meta.get("model_type", "Ridge_Autoregressive_TimeSeries") if meta else "Ridge_Autoregressive_TimeSeries",
             "evaluation_metrics": meta.get("evaluation_metrics", {}) if meta else {},
+            "total_forecast": round(total_val, 2),
+            "avg_daily_forecast": round(avg_val, 2),
             "forecast": horizon
         }
 

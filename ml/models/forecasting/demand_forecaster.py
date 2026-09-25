@@ -16,7 +16,7 @@ logger = logging.getLogger("olistiq.ml.forecasting")
 
 
 class DemandForecaster:
-    """Time-series demand and GMV forecasting engine with lag features and confidence bounds."""
+    """Time-series demand and GMV forecasting engine with Ridge regression and 95% confidence bands."""
 
     def __init__(
         self,
@@ -27,12 +27,10 @@ class DemandForecaster:
         self.target_col = target_col
         self.horizon_days = horizon_days
         self.random_state = random_state
-        self.model = GradientBoostingRegressor(
-            n_estimators=120,
-            learning_rate=0.05,
-            max_depth=4,
-            random_state=self.random_state
-        )
+        self.model = Pipeline([
+            ("scaler", StandardScaler()),
+            ("ridge", Ridge(alpha=10.0, random_state=self.random_state))
+        ])
         self.feature_cols: List[str] = []
         self.residual_std: float = 0.0
         self.last_known_data: pd.DataFrame = None
@@ -112,6 +110,7 @@ class DemandForecaster:
         
         evaluation = {
             "target": self.target_col,
+            "model_type": "Ridge_Autoregressive_TimeSeries",
             "train_samples": len(df_train),
             "test_samples": len(df_test),
             "test_period": {
@@ -126,7 +125,7 @@ class DemandForecaster:
         }
         
         logger.info(
-            "Forecasting [%s] - Baseline MAE: %.2f vs ML MAE: %.2f (%.1f%% improvement)",
+            "Forecasting [%s] - Baseline MAE: %.2f vs Ridge ML MAE: %.2f (%.1f%% improvement)",
             self.target_col, baseline_metrics["mae"], ml_metrics["mae"], evaluation["mae_improvement_pct"]
         )
         return self, evaluation
@@ -162,16 +161,22 @@ class DemandForecaster:
             X_step = pd.DataFrame([row])[self.feature_cols]
             pred_val = max(0.0, float(self.model.predict(X_step)[0]))
             
-            # Confidence interval
-            ci_margin = 1.96 * max(self.residual_std, pred_val * 0.1)
+            # 95% Prediction interval with compound horizon uncertainty scale
+            uncertainty_scale = float(np.sqrt(1.0 + (i / float(steps)) * 0.4))
+            ci_margin = 1.96 * max(self.residual_std, pred_val * 0.08) * uncertainty_scale
             lower_bound = max(0.0, pred_val - ci_margin)
             upper_bound = pred_val + ci_margin
             
+            formatted_date = next_date.strftime("%Y-%m-%d")
             forecast_item = {
-                "date": next_date.strftime("%Y-%m-%d"),
+                "date": formatted_date,
+                "forecast_date": formatted_date,
                 "forecast_value": round(pred_val, 2),
+                "predicted_value": round(pred_val, 2),
                 "lower_bound": round(lower_bound, 2),
+                "predicted_lower": round(lower_bound, 2),
                 "upper_bound": round(upper_bound, 2),
+                "predicted_upper": round(upper_bound, 2),
                 "day_name": next_date.strftime("%A"),
                 "is_weekend": bool(row["is_weekend"])
             }

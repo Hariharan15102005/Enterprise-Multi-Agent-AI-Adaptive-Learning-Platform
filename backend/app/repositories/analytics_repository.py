@@ -1,6 +1,48 @@
 from typing import List, Dict, Any, Optional
 from backend.app.repositories.base_repository import BaseRepository
 
+CATEGORY_NAME_MAP: Dict[str, str] = {
+    "health_beauty": "Health & Beauty",
+    "watches_gifts": "Watches & Gifts",
+    "bed_bath_table": "Bed, Bath & Table",
+    "sports_leisure": "Sports & Leisure",
+    "computers_accessories": "Computers & Accessories",
+    "furniture_decor": "Furniture & Decor",
+    "housewares": "Housewares",
+    "cool_stuff": "Cool Stuff",
+    "auto": "Automotive",
+    "toys": "Toys & Games",
+    "garden_tools": "Garden & Outdoor",
+    "baby": "Baby & Maternity",
+    "telephony": "Telephony & Mobile",
+    "stationery": "Stationery & Office",
+    "perfumery": "Perfumery & Fragrance",
+    "fashion_bags_accessories": "Fashion & Accessories",
+    "pet_shop": "Pet Shop Supplies",
+    "electronics": "Electronics",
+    "luggage_accessories": "Luggage & Travel",
+    "consoles_games": "Consoles & Gaming",
+    "musical_instruments": "Musical Instruments",
+    "audio": "Audio Equipment",
+    "small_appliances": "Small Appliances",
+    "home_appliances": "Home Appliances",
+    "home_appliances_2": "Major Home Appliances",
+}
+
+PAYMENT_CHANNEL_MAP: Dict[str, str] = {
+    "credit_card": "Credit Card",
+    "boleto": "Boleto Banc\u00e1rio",
+    "voucher": "Voucher",
+    "debit_card": "Debit Card",
+    "not_defined": "Other / Undefined"
+}
+
+def format_category_name(raw: Optional[str]) -> str:
+    if not raw or str(raw).strip() in ["other_uncategorized", "None", "", "none"]:
+        return "Other / Uncategorized"
+    clean = str(raw).strip().lower()
+    return CATEGORY_NAME_MAP.get(clean, clean.replace("_", " ").title())
+
 class AnalyticsRepository(BaseRepository):
     def get_revenue_trends(self, interval: str = "month", start_date: Optional[str] = None, end_date: Optional[str] = None) -> List[Dict[str, Any]]:
         where_clauses = ["fo.order_status NOT IN ('canceled', 'unavailable')"]
@@ -69,9 +111,16 @@ class AnalyticsRepository(BaseRepository):
         where_sql = " AND ".join(where_clauses)
         sort_col = "total_gmv DESC" if sort_by == "gmv" else ("total_orders DESC" if sort_by == "orders" else "late_rate_pct DESC")
 
+        total_gmv_query = f"""
+        SELECT COALESCE(SUM(foi.item_price_brl), 1.0)
+        FROM fact_order_items foi
+        WHERE {where_sql}
+        """
+        total_eligible_gmv = float(self.execute_scalar(total_gmv_query, params) or 1.0)
+
         query = f"""
         SELECT 
-            dp.category_name_en,
+            COALESCE(dp.category_name_en, 'other_uncategorized') AS category_name_en,
             COUNT(DISTINCT foi.order_id) AS total_orders,
             COUNT(foi.order_item_id) AS total_items_sold,
             COALESCE(SUM(foi.item_price_brl), 0.0) AS total_gmv,
@@ -79,29 +128,45 @@ class AnalyticsRepository(BaseRepository):
             COALESCE(AVG(foi.item_price_brl), 0.0) AS avg_price,
             COALESCE(AVG(CASE WHEN foi.is_delayed THEN 1.0 ELSE 0.0 END) * 100.0, 0.0) AS late_rate_pct
         FROM fact_order_items foi
-        JOIN dim_product dp ON foi.product_id = dp.product_id
+        LEFT JOIN dim_product dp ON foi.product_id = dp.product_id
         WHERE {where_sql}
-        GROUP BY dp.category_name_en
+        GROUP BY COALESCE(dp.category_name_en, 'other_uncategorized')
         ORDER BY {sort_col}
         LIMIT :limit
         """
         rows = self.execute_query(query, params)
-        return [
-            {
-                "category_name_en": str(r["category_name_en"]),
-                "total_orders": int(r["total_orders"]),
-                "total_items_sold": int(r["total_items_sold"]),
-                "total_gmv": round(float(r["total_gmv"]), 2),
+        result = []
+        for r in rows:
+            raw_cat = str(r["category_name_en"])
+            display_cat = format_category_name(raw_cat)
+            gmv = round(float(r["total_gmv"]), 2)
+            orders = int(r["total_orders"])
+            items = int(r["total_items_sold"])
+            late = round(float(r["late_rate_pct"]), 2)
+            contrib = round((gmv / total_eligible_gmv) * 100.0, 2)
+
+            result.append({
+                "category_name_en": raw_cat,
+                "category": display_cat,
+                "total_orders": orders,
+                "orders": orders,
+                "total_items_sold": items,
+                "items_sold": items,
+                "total_gmv": gmv,
+                "gmv": gmv,
                 "total_freight": round(float(r["total_freight"]), 2),
                 "avg_price": round(float(r["avg_price"]), 2),
+                "contribution_pct": contrib,
                 "avg_review_score": None,
-                "late_rate_pct": round(float(r["late_rate_pct"]), 2)
-            }
-            for r in rows
-        ]
+                "late_rate_pct": late,
+                "late_rate": late
+            })
+        return result
 
     def get_payment_analytics(self) -> List[Dict[str, Any]]:
-        total_val = self.execute_scalar("SELECT COALESCE(SUM(payment_value_brl), 1.0) FROM fact_payments") or 1.0
+        total_val = float(self.execute_scalar("SELECT COALESCE(SUM(payment_value_brl), 1.0) FROM fact_payments WHERE payment_value_brl > 0") or 1.0)
+        total_tx = int(self.execute_scalar("SELECT COUNT(*) FROM fact_payments WHERE payment_value_brl > 0") or 1)
+
         query = """
         SELECT 
             payment_type,
@@ -110,21 +175,34 @@ class AnalyticsRepository(BaseRepository):
             COALESCE(AVG(payment_value_brl), 0.0) AS avg_payment_value,
             COALESCE(AVG(payment_installments), 1.0) AS avg_installments
         FROM fact_payments
+        WHERE payment_value_brl > 0
         GROUP BY payment_type
         ORDER BY total_payment_value DESC
         """
         rows = self.execute_query(query)
-        return [
-            {
-                "payment_type": str(r["payment_type"]),
-                "total_transactions": int(r["total_transactions"]),
-                "total_payment_value": round(float(r["total_payment_value"]), 2),
+        result = []
+        for r in rows:
+            ptype = str(r["payment_type"])
+            pchannel = PAYMENT_CHANNEL_MAP.get(ptype, ptype.replace("_", " ").title())
+            tx_count = int(r["total_transactions"])
+            val = round(float(r["total_payment_value"]), 2)
+            val_pct = round((val / total_val) * 100.0, 2)
+            tx_pct = round((tx_count / total_tx) * 100.0, 2)
+
+            result.append({
+                "payment_type": ptype,
+                "payment_channel": pchannel,
+                "total_transactions": tx_count,
+                "transaction_count": tx_count,
+                "total_payment_value": val,
+                "total_value": val,
                 "avg_payment_value": round(float(r["avg_payment_value"]), 2),
                 "avg_installments": round(float(r["avg_installments"]), 2),
-                "share_pct": round(float(r["total_payment_value"] / total_val * 100.0), 2)
-            }
-            for r in rows
-        ]
+                "share_pct": val_pct,
+                "val_share_pct": val_pct,
+                "tx_share_pct": tx_pct
+            })
+        return result
 
     def get_insights(self) -> List[Dict[str, Any]]:
         return [

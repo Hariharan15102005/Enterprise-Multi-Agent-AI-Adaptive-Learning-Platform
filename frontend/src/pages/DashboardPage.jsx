@@ -21,7 +21,7 @@ export function DashboardPage({ onNavigate }) {
         dashboardApi.getKPIs(),
         dashboardApi.getSummary(),
         analyticsApi.getRevenueTrends({ interval: 'month' }),
-        analyticsApi.getCategoryAnalytics({ limit: 6, sort_by: 'gmv' })
+        analyticsApi.getCategoryAnalytics({ limit: 10, sort_by: 'gmv' })
       ]);
 
       setKpiData(kpiRes?.data || null);
@@ -158,9 +158,18 @@ export function DashboardPage({ onNavigate }) {
                 Top Product Categories
               </h4>
               <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                Highest GMV generators
+                Top 10 categories by delivered GMV
               </p>
             </div>
+            {onNavigate && (
+              <button
+                className="btn btn-secondary"
+                style={{ padding: '0.35rem 0.65rem', fontSize: '0.75rem' }}
+                onClick={() => onNavigate('analytics')}
+              >
+                Deep Dive <ArrowUpRight size={13} />
+              </button>
+            )}
           </div>
           {loading ? (
             <LoadingSkeleton rows={4} height="3.5rem" />
